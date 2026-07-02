@@ -5,6 +5,18 @@ This guide covers prerequisites, software installation, and environment verifica
 ## Prerequisites
 
 - Enflame GCU hardware with driver and runtime installed
+```bash
+  # install kmd and runtime
+   ./TopsPlatform_*_deb_amd64.run -y
+  # install torch_gcu whl
+   pip install  x86_64-linux-rel/python_packages/torch_gcu-2.9.1+3.7.1.16-cp312-cp312-linux_x86_64.whl
+  # install migration whl
+   pip install  x86_64-linux-rel/python_packages/migration-3.7.20260519+gcu-py3-none-any.whl
+  # install triton_gcu whl
+   pip install  x86_64-linux-rel/python_packages/triton_gcu-3.5.1+1.0.20260522.cc.1.5.1.101903-py3-none-any.whl
+  # install vllm_gcu whl
+  pip install  x86_64-linux-rel/python_packages/vllm_gcu-0.14.1+3.7.20260521-cp39-abi3-linux_x86_64.whl 
+```
 - Linux host with network access (for pip/git and dataset downloads)
 - Python 3.10+ (3.12 verified)
 - Sufficient shared memory (`--shm-size` ≥ 64G recommended in Docker)
@@ -13,7 +25,7 @@ Verify GCU visibility on the host:
 
 ```bash
 # Vendor-specific SMI tool (name may vary by driver version)
-tops-smi
+efsmi
 # or
 echo $TOPS_VISIBLE_DEVICES
 python3 -c "import torch_gcu, torch; print(torch.gcu.device_count())"
