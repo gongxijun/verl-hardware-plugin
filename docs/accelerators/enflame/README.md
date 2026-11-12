@@ -11,6 +11,7 @@ docs/accelerators/enflame/
 ├── README.md              # This file
 ├── install_guidance.md    # Installation guide
 ├── quick_start.md         # Quick start (GRPO baseline)
+├── feature_support.md     # Supported features and limitations
 └── faq.md                 # FAQ and troubleshooting
 ```
 
@@ -18,6 +19,7 @@ docs/accelerators/enflame/
 
 - [Installation Guide](./install_guidance.md) — prerequisites, software stack, environment verification
 - [Quick Start](./quick_start.md) — run the acceptance baseline (`scripts/accelerators/enflame/baseline_grpo_gsm8k_enflame.sh`)
+- [Feature Support](./feature_support.md) — features supported on GCU and known limitations
 - [FAQ](./faq.md) — common errors, known limitations, diagnostic commands
 
 ## Software Stack
@@ -47,7 +49,8 @@ docs/accelerators/enflame/
 | Communication backend | `eccl` (default) or `flagcx` (when `USE_FLAGCX=1`) |
 | Device visibility env var | `TOPS_VISIBLE_DEVICES` |
 | Ray resource name | `GPU` (built-in; uses `num_gpus`, not custom resources) |
-| IPC support | Device-tensor path only (Python SHM unsupported on `torch_gcu`) |
+| Checkpoint engine | ECCL registered as `eccl` (`nccl` is a compatibility alias) for disaggregated/async rollout |
+| IPC support | Device-side IPC handles, not Python SHM (see [FAQ](./faq.md#weight-transfer--ipc--shm-errors)) |
 
 ## Acceptance Baseline (E2E Validation)
 
@@ -58,7 +61,7 @@ End-to-end validation uses the repo-standard GRPO baseline on GSM8K with Qwen3-0
 **Run on Enflame GCU:**
 
 ```bash
-# After install_guidance.md steps (data/model at /workspace/...)
+# After install_guidance.md steps; pass DATA_DIR/MODEL_DIR if your copies live elsewhere
 bash scripts/accelerators/enflame/baseline_grpo_gsm8k_enflame.sh
 ```
 
@@ -67,6 +70,10 @@ This wraps [`scripts/baseline_grpo_gsm8k.sh`](../../../scripts/baseline_grpo_gsm
 ```bash
 NGPUS_PER_NODE=4 TOPS_VISIBLE_DEVICES=0,1,2,3 bash scripts/accelerators/enflame/baseline_grpo_gsm8k_enflame.sh
 ```
+
+`TOPS_VISIBLE_DEVICES` is pinned inside the wrapper, in both the shell export and the Ray `runtime_env` entry; edit those lines in the script to run on a different device set.
+
+**Disaggregated / async layout:** [`example_grpo_gsm8k_enflame_async.sh`](../../../scripts/accelerators/enflame/example_grpo_gsm8k_enflame_async.sh) splits the visible GCUs between training and rollout and moves weights through the ECCL checkpoint engine (`checkpoint_engine.backend=eccl`). It is an example, not part of the acceptance baseline.
 
 **Acceptance criteria** (first 100 steps):
 
@@ -104,6 +111,8 @@ Ray workers do **not** inherit shell exports. Pass critical variables through Hy
 +ray_kwargs.ray_init.runtime_env.env_vars.RAY_EXPERIMENTAL_NOSET_TOPS_VISIBLE_DEVICES='1'
 +ray_kwargs.ray_init.runtime_env.env_vars.TOPS_VISIBLE_DEVICES='0,1,2,3'
 ```
+
+The example scripts do not mirror `USE_FLAGCX`/`FLAGCX_PATH`; add them to `runtime_env` yourself when you enable FlagCX, otherwise workers fall back to `eccl`.
 
 ## Quick Verification
 

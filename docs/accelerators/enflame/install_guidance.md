@@ -48,7 +48,7 @@ See [verl dataset guide](https://verl.readthedocs.io/en/latest/examples/gsm8k_ex
 
 verl is the RL training framework. For detailed installation options, see: [verl Installation Guide](https://verl.readthedocs.io/en/latest/start/install.html).
 
-verl-hardware-plugin provides the Cambricon hardware platform integration for verl. For detailed information, see: [verl-hardware-plugin](https://github.com/verl-project/verl-hardware-plugin).
+verl-hardware-plugin provides the Enflame hardware platform integration for verl. For detailed information, see: [verl-hardware-plugin](https://github.com/verl-project/verl-hardware-plugin).
 
 ```bash
 # Install verl
